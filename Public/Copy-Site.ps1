@@ -1,4 +1,4 @@
-function Clone-Site {
+function Copy-Site {
     param ()
     $defaultTenantID = "96acafad-52a3-4209-b509-f0c3eb4b7fdf"
     $TenantID = Read-Host -Prompt "Tenant ID. Press enter to accept [$($defaultTenantId)]"

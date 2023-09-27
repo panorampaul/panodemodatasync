@@ -1,6 +1,6 @@
-$clientId = $env:PELM_DR_APP_ID  
-$clientSecret = $env:PELM_DR_APP_SECRET
-$tenantName = $env:PELM_DR_TENANT_NAME
+$clientId = "d97b0e58-0949-4003-b5e5-6a8757250cdb"  
+$clientSecret = "Zwy8Q~K7m-6uA3Ks0xhfMGG9XS4Q-SA5Wg5bnbvR"  
+$tenantName = "panoramdigitalltd.onmicrosoft.com"  
 $resource = "https://graph.microsoft.com/"  
 
 $tokenBody = @{

@@ -1,4 +1,9 @@
-$clientId = $env:PELM_DR_APP_ID  
+function Add-File {
+    param ()
+    $result = Test-EnvironmentVariables
+    if($result) {
+        Write-Host "Good to go!"
+        $clientId = $env:PELM_DR_APP_ID  
 $clientSecret = $env:PELM_DR_APP_SECRET
 $tenantName = $env:PELM_DR_TENANT_NAME
 $resource = "https://graph.microsoft.com/"  
@@ -29,3 +34,6 @@ $upload_headers = @{
 }
 
 Invoke-RestMethod -Headers $upload_headers -Uri $puturl -Body $Content -Method PUT
+
+    }
+}
