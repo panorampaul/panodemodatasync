@@ -1,8 +1,5 @@
 function Copy-Site {
     param ()
-    $defaultTenantID = "96acafad-52a3-4209-b509-f0c3eb4b7fdf"
-    $TenantID = Read-Host -Prompt "Tenant ID. Press enter to accept [$($defaultTenantId)]"
-    $TenantID = ($defaultTenantID, $TenantID)[[bool]$TenantID]
     $defaultSiteName = "TestOfDriveRefresh"
     $SiteName = Read-Host -Prompt "Site Name. Press enter to accept [$($defaultSiteName)]"
     $SiteName = ($defaultSiteName, $SiteName)[[bool]$SiteName]
@@ -23,8 +20,8 @@ function Copy-Site {
         Import-Module Microsoft.Graph
     }
 
-    Connect-MgGraph -TenantId $TenantID -Scopes 'Sites.FullControl.All', 'Sites.ReadWrite.All'
-
+    New-MgGraphConnection
+    
     $ID = Get-MgSite -Search $SiteName | Select-Object -ExpandProperty Id
 
     #$BID = Get-MgSite -Search $BackupSiteName | Select-Object -ExpandProperty Id

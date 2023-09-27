@@ -13,6 +13,7 @@ function Add-File {
     $FileName
   )
   $result = Test-EnvironmentVariables
+  New-MgGraphConnection
   if ($result) {
     Write-Host "Good to go!"
     $clientId = $env:PELM_DR_APP_ID

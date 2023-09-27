@@ -16,8 +16,8 @@ function Update-DemoData {
     
     Write-Output "Link:  $($deltaLinkUrl)"
 
-    Connect-MgGraph -Scopes Sites.Read.All, Sites.FullControl.All, Sites.ReadWrite.All, Files.Read.All, Files.ReadWrite.All
-
+    New-MgGraphConnection
+    
     $Delta = Invoke-MgGraphRequest -Uri $deltaLinkUrl -Method Get
     $baseline = Get-Content -Path 'delta/delta.json' | ConvertFrom-Json
    # Iterate through the value array
@@ -37,11 +37,8 @@ function Update-DemoData {
 
                 $fileExists = Test-Path -Path $filePath -PathType Leaf
                 
-                #POST /sites/{siteId}/drive/items/{itemId}/createUploadSession
-                $uploadUri = "https://graph.microsoft.com/v1.0/sites/$($Site.Id)/drive/items/$($ParentDriveID)/createUploadSession"
                 if($filePath) {
                     Write-Output "$($deletedItem.name) exists and can be restored"
-                    Invoke-MSGraphUpload -FullPath $filePath -UploadUri $uploadUri
                 } else {
                     Write-Output "no backup for $($item.name). unable to restore "
                 }

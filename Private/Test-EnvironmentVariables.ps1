@@ -1,6 +1,6 @@
 function Test-EnvironmentVariables {
     # List of environment variables to check
-    $variablesToCheck = @("PELM_DR_APP_ID", "PELM_DR_APP_SECRET","PELM_DR_TENANT_ID","PELM_DR_TENANT_NAME" )
+    $variablesToCheck = @("PELM_DR_APP_ID","PELM_DR_APP_CERT_THUMBPRINT", "PELM_DR_APP_SECRET","PELM_DR_TENANT_ID","PELM_DR_TENANT_NAME" )
 
     foreach ($var in $variablesToCheck) {
         if (-not (Get-Content "env:$var")) {

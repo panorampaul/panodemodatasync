@@ -45,7 +45,7 @@ param (
         }
      $SiteFiles.Add($ReportLine) 
 
-     Get-MgDriveItemContent -DriveId $D.parentReference.driveId -DriveItemId $D.id -OutFile $OutFilePath
+     Get-MgDriveItemContent -DriveId $D.parentReference.driveId -DriveItemId $D.id -OutFile $OutFilePath -Verbose
 
   } # End If
 
