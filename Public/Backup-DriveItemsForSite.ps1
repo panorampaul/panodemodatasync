@@ -1,13 +1,8 @@
-function Get-Files {
+function New-BaselineForSite {
   param()
-  $defaultTenantID = "96acafad-52a3-4209-b509-f0c3eb4b7fdf"
-  $TenantID = Read-Host -Prompt "Tenant ID. Press enter to accept [$($defaultTenantId)]"
-  $TenantID = ($defaultTenantID,$TenantID)[[bool]$TenantID]
   $defaultSiteName = "TestOfDriveRefresh"
   $SearchSite = Read-Host -Prompt "Site Name. Press enter to accept [$($defaultSiteName)]"
   $SearchSite = ($defaultSiteName,$SearchSite)[[bool]$SearchSite]
-
-
 
 
   # Connect to the Microsoft Graph with the permission to read sites
@@ -93,18 +88,10 @@ function Get-Files {
   UnpackFilesRecursively -Items $Items -SiteUri $SiteUri -FolderPath $DocumentLibrary.Name -SiteFiles $SiteFiles
 
   Write-Host ("Total files found {0}" -f $SiteFiles.Count)
-  $SiteFiles
 
   $jsonData = $SiteFiles | ConvertTo-Json
   $jsonPath = "delta/$($SearchSite)_$($DriveName)_files.json"
   $jsonData | Set-Content -Path $jsonPath
 
-  # Create a baseline
-  Write-Output "Site $($Site.Id)"
-  $Uri = "https://graph.microsoft.com/v1.0/sites/$($Site.Id)/drive/root/delta"
-  $Delta = Invoke-MgGraphRequest -Uri $Uri -Method Get
-  $jsonData = $Delta | ConvertTo-Json -Depth 10
-  $jsonPath = "delta/$($SearchSite)_delta.json"
-  $jsonData | Set-Content -Path $jsonPath
 
 }
