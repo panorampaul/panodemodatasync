@@ -3,6 +3,12 @@ function Add-File {
     [Parameter(Mandatory = $true)]
     $Filepath,
 
+  [Parameter(Mandatory = $true)]
+    $SiteId,
+
+     [Parameter(Mandatory = $true)]
+    $FolderId,
+
     [Parameter(Mandatory = $true)]
     $FileName
   )
@@ -33,10 +39,9 @@ function Add-File {
 
     $Content = Get-Content -Path $Filepath
 
-    $ParentId = "b!unHWR0lli0mrWl0HOa531N9URVpz2GlHr4IMnfLzGLQ_OqxXB6rSRIlbjdaCrzHG"
-    $SiteId = "panoramdigitalltd.sharepoint.com,47d671ba-6549-498b-ab5a-5d0739ae77d4,5a4554df-d873-4769-af82-0c9df2f318b4"
-    $puturl = "https://graph.microsoft.com/v1.0/sites/$($SiteId)/drive/items/root:/Clauses/$($Filename):/content"
+    $puturl = "https://graph.microsoft.com/v1.0/sites/$($SiteId)/drive/items/root:/$($FolderId)/$($Filename):/content"
 
+    Write-Host "$($puturl)"
     $upload_headers = @{
 
       "Authorization" = "Bearer $($tokenResponse.access_token)"
