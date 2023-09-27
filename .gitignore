@@ -1,0 +1,10 @@
+*.log
+*.bak
+*.swp
+*.psess
+*.psreadline
+bin/
+obj/
+.vscode/
+delta/*
+Downloads/*
