@@ -29,6 +29,10 @@ function Sync-DemoData {
   
   Write-Output "Loading $($CachedDeltaFile)"
   $baseline = Get-Content -Path $CachedDeltaFile | ConvertFrom-Json
+  if (-not $Delta.value.Count) {
+     Write-Output "No changes detected"
+     return
+  }
   # Iterate through the value array
   foreach ($item in $Delta.value) {
     #ignore root folder as it always changes on any update
