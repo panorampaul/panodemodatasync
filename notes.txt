@@ -1,0 +1,42 @@
+$upload_session = "https://graph.microsoft.com/v1.0/drives/$Document_drive_ID/root:/Clauses/$($Filename):/createUploadSession"
+
+$upload_session_url = (Invoke-RestMethod -Uri $upload_session -Headers $headers -Method Post).uploadUrl
+
+$ChunkSize = 62259200
+$file = New-Object System.IO.FileInfo ($Filepath)
+$reader = [System.IO.File]::OpenRead($Filepath)
+$buffer = New-Object -TypeName Byte[] -ArgumentList $ChunkSize
+$position = 0
+$counter = 0
+
+Write-Host "ChunkSize: $ChunkSize" -ForegroundColor Cyan
+Write-Host "BufferSize: $($buffer.Length)" -ForegroundColor Cyan
+
+$moreData = $true
+while ($moreData) {
+  #Read a chunk
+  $bytesRead = $reader.Read($buffer,0,$buffer.Length)
+  $output = $buffer
+  if ($bytesRead -ne $buffer.Length) {
+    #no more data to be read
+    $moreData = $false
+    #shrink the output array to the number of bytes
+    $output = New-Object -TypeName Byte[] -ArgumentList $bytesRead
+    [array]::Copy($buffer,$output,$bytesRead)
+    Write-Host "no more data" -ForegroundColor Yellow
+  }
+  #Upload the chunk
+  $Header = @{
+    'Content-Length' = $($output.Length)
+    'Content-Range' = "bytes $position-$($position + $output.Length - 1)/$($file.Length)"
+  }
+
+  Write-Host "Content-Length = $($output.Length)" -ForegroundColor Cyan
+  Write-Host "Content-Range  = bytes $position-$($position + $output.Length - 1)/$($file.Length)" -ForegroundColor Cyan
+  #$position = $position + $output.Length - 1
+  $position = $position + $output.Length
+  Invoke-RestMethod -Method Put -Uri $upload_session_url -Body $output -Headers $Header -ContentType "application/octet-stream"
+  #Increment counter
+  $counter++
+}
+$reader.Close()
