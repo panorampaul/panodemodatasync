@@ -5,7 +5,7 @@ function Sync-DemoData {
     [Parameter(Mandatory = $true)]
     [string]$DriveName,
     [Parameter(Mandatory = $true)]
-    [string]$SiteID
+    [string]$SiteId
 
   )
 
@@ -54,12 +54,12 @@ function Sync-DemoData {
         $BaselineItem = $baseline.value | Where-Object { $_.id -eq $item.id }
 
         if ($($BaselineItem)) {
-          if(-not ($item.Name -eq $BaselineItem.Name)) {
+          if (-not ($item.Name -eq $BaselineItem.Name)) {
             $crudState = [CrudState]::Amended
           } else {
             $crudState = [CrudState]::NoAction
           }
-          
+
         }
 
         $baselineFileExists = Test-Path -Path "Downloads/$($item.id)" -PathType Leaf
@@ -78,23 +78,22 @@ function Sync-DemoData {
 
         }
 
-        Write-Output "$($item.id) $driveTypeValue, $crudState, $restorable"
+        #Write-Output "$($item.id) $driveTypeValue, $crudState, $restorable"
         switch ($crudState) {
           ([CrudState]::Added) {
-            Delete-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteID
+            Delete-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteId
           }
           ([CrudState]::Amended) {
-            #Write-Output "To amend: $($item.id)"
-            
-
-              
-                Amend-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteID -FileName $BaselineItem.Name
-               
-              
-            
+            Amend-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteId -FileName $BaselineItem.Name
           }
           ([CrudState]::Deleted) {
-            #Write-Output "To restore: $($item.id)"
+            if ($restorable -eq [Restorable]::HasParent) {
+              if ($driveTypeValue -eq [DriveType]::Folder) {
+                Restore-Folder -FileName $BaselineItem.Name -SiteID $SiteId -DriveItemId $BaselineItem.parentReference.id
+              } else {
+                Write-Output "$($item.id) $driveTypeValue, $crudState, $restorable $($BaselineItem.id)"
+              }
+            }
           }
         }
       }

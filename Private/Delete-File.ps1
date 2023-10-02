@@ -1,6 +1,6 @@
 function Delete-File {
   param(
-    [string]$SiteID,
+    [string]$SiteId,
     [DriveType]$DriveTypeValue,
     [string]$Id
 
@@ -8,7 +8,7 @@ function Delete-File {
 
   try {
 
-    $url = "https://graph.microsoft.com/v1.0/sites/$($SiteID)/drive/items/$($Id)"
+    $url = "https://graph.microsoft.com/v1.0/sites/$($SiteId)/drive/items/$($Id)"
 
     $result = Invoke-MgGraphRequest -Uri $url -Method Delete
 

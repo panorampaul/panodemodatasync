@@ -1,6 +1,6 @@
 function Amend-File {
   param(
-    [string]$SiteID,
+    [string]$$SiteId,
     [DriveType]$DriveTypeValue,
     [string]$Id,
     [string]$FileName
@@ -14,7 +14,7 @@ function Amend-File {
 }
 "@
 
-    $url = "https://graph.microsoft.com/v1.0/sites/$($SiteID)/drive/items/$($Id)"
+    $url = "https://graph.microsoft.com/v1.0/sites/$($$SiteId)/drive/items/$($Id)"
 
     $result = Invoke-MgGraphRequest -Uri $url -Method Patch -Body $jsonData -ContentType "application/json"
 
