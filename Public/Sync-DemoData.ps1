@@ -39,64 +39,75 @@ function Sync-DemoData {
 
     Write-Output "$($deltaValues.Count) changes since baseline"
     # Iterate through the value array
-    foreach ($item in $deltaValues) {
-      #ignore root folder as it always changes on any update
-      if (($item.Name -eq "root")) {
-        Write-Output "$($item.id) root folder updated at $($item.lastModifiedDateTime)"
-      } else {
-        $driveTypeValue = [DriveType]::File
-        if ($($item.Folder)) {
-          $driveTypeValue = [DriveType]::Folder
-        }
-        $crudState = [CrudState]::Added
+    try {
+      foreach ($item in $deltaValues) {
+        #ignore root folder as it always changes on any update
+        if (($item.Name -eq "root")) {
+          Write-Output "$($item.id) root folder updated at $($item.lastModifiedDateTime)"
+        } else {
+          $driveTypeValue = [DriveType]::File
+          if ($($item.Folder)) {
+            $driveTypeValue = [DriveType]::Folder
+          }
+          $crudState = [CrudState]::Added
 
-        $restorable = [Restorable]::NotRestorable
-        $BaselineItem = $baseline.value | Where-Object { $_.id -eq $item.id }
+          $restorable = [Restorable]::NotRestorable
+          $BaselineItem = $baseline.value | Where-Object { $_.id -eq $item.id }
 
-        if ($($BaselineItem)) {
-          if (-not ($item.Name -eq $BaselineItem.Name)) {
-            $crudState = [CrudState]::Amended
-          } else {
-            $crudState = [CrudState]::NoAction
+          if ($($BaselineItem)) {
+            if (-not ($item.Name -eq $BaselineItem.Name)) {
+              $crudState = [CrudState]::Amended
+            } else {
+              $crudState = [CrudState]::NoAction
+            }
+
           }
 
-        }
+          $baselineFileExists = Test-Path -Path "Downloads/$($item.id)" -PathType Leaf
+          $ParentItemFromDelta = $deltaValues | Where-Object { $_.id -eq $BaselineItem.parentReference.id }
+          if ($($BaselineItem) -and ($item.Folder -or $baselineFileExists)) {
+            $restorable = [Restorable]::HasParent
 
-        $baselineFileExists = Test-Path -Path "Downloads/$($item.id)" -PathType Leaf
-        $ParentItemFromDelta = $deltaValues | Where-Object { $_.id -eq $BaselineItem.parentReference.id }
-        if ($($BaselineItem) -and ($item.Folder -or $baselineFileExists)) {
-          $restorable = [Restorable]::HasParent
-
-          if ($ParentItemFromDelta.Deleted) {
-            $restorable = [Restorable]::NoParent
+            if ($ParentItemFromDelta.Deleted) {
+              $restorable = [Restorable]::NoParent
+            }
           }
-        }
 
 
-        if ($($item.Deleted)) {
-          $crudState = [CrudState]::Deleted
+          if ($($item.Deleted)) {
+            $crudState = [CrudState]::Deleted
 
-        }
-
-        #Write-Output "$($item.id) $driveTypeValue, $crudState, $restorable"
-        switch ($crudState) {
-          ([CrudState]::Added) {
-            Delete-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteId
           }
-          ([CrudState]::Amended) {
-            Amend-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteId -FileName $BaselineItem.Name
-          }
-          ([CrudState]::Deleted) {
-            if ($restorable -eq [Restorable]::HasParent) {
-              if ($driveTypeValue -eq [DriveType]::Folder) {
-                Restore-Folder -FileName $BaselineItem.Name -SiteID $SiteId -DriveItemId $BaselineItem.parentReference.id
-              } else {
-                Write-Output "$($item.id) $driveTypeValue, $crudState, $restorable $($BaselineItem.id)"
+
+          #Write-Output "$($item.id) $driveTypeValue, $crudState, $restorable"
+          switch ($crudState) {
+            ([CrudState]::Added) {
+              Delete-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteId
+            }
+            ([CrudState]::Amended) {
+              Amend-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteId -FileName $BaselineItem.Name
+            }
+            ([CrudState]::Deleted) {
+              if ($restorable -eq [Restorable]::HasParent) {
+                if ($driveTypeValue -eq [DriveType]::Folder) {
+                  Restore-Folder -FileName $BaselineItem.Name -SiteID $SiteId -DriveItemId $BaselineItem.parentReference.id
+                } else {
+                  Write-Output "$($item.id) $driveTypeValue, $crudState, $restorable $($BaselineItem.id)"
+                }
               }
             }
           }
         }
       }
+      if ( -not ($deltaValues.Count -eq 0)) {
+         New-BaselineForSite -SearchSite $SearchSite
+      } else {
+        Write-Output "No new baseline needed"
+      }
+     
+    } catch {
+      Write-Output "Something went wrong. Exiting"
+      return
     }
   } else {
     Write-Error "$($SearchSite) has not been baselined.  File $($CachedDeltaFile) not found. Creating a baseline now..."
