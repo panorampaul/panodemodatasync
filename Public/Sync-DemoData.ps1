@@ -54,7 +54,12 @@ function Sync-DemoData {
         $BaselineItem = $baseline.value | Where-Object { $_.id -eq $item.id }
 
         if ($($BaselineItem)) {
-          $crudState = [CrudState]::Amended
+          if(-not ($item.Name -eq $BaselineItem.Name)) {
+            $crudState = [CrudState]::Amended
+          } else {
+            $crudState = [CrudState]::NoAction
+          }
+          
         }
 
         $baselineFileExists = Test-Path -Path "Downloads/$($item.id)" -PathType Leaf
@@ -80,14 +85,13 @@ function Sync-DemoData {
           }
           ([CrudState]::Amended) {
             #Write-Output "To amend: $($item.id)"
-            if ($driveTypeValue -eq [DriveType]::Folder) {
+            
 
-              if (-not ($item.Name -eq $BaselineItem.Name)) {
+              
                 Amend-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteID -FileName $BaselineItem.Name
-                #Write-Output "$($item.name) vs $($BaselineItem.Name)"
-
-              }
-            }
+               
+              
+            
           }
           ([CrudState]::Deleted) {
             #Write-Output "To restore: $($item.id)"

@@ -7,6 +7,7 @@ enum CrudState {
     Added
     Amended
     Deleted
+    NoAction
 }
 
 enum Restorable {
