@@ -83,32 +83,34 @@ function Sync-DemoData {
           Write-Output "$($item.id) $driveTypeValue, $crudState, $restorable"
           switch ($crudState) {
             ([CrudState]::Added) {
-              Delete-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteId
+              Delete-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteId $SiteId
             }
             ([CrudState]::Amended) {
-              Amend-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteId -FileName $BaselineItem.Name
+              Amend-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteId $SiteId -FileName $BaselineItem.Name
             }
             ([CrudState]::Deleted) {
-              if ($restorable -eq [Restorable]::HasParent) {
-                if ($driveTypeValue -eq [DriveType]::Folder) {
-                  Restore-Folder -FileName $BaselineItem.Name -SiteID $SiteId -DriveItemId $BaselineItem.parentReference.id
+                #We don't need to restore folders if they have files in them
+                if ($driveTypeValue -eq [DriveType]::File) {
+                  Add-File -InFilePath "Downloads/$($item.id)" -SiteId $SiteId -FolderId $BaselineItem.parentReference.path -FileName $BaselineItem.name
                 } else {
-                  Write-Output "x $($item.id) $driveTypeValue, $crudState, $restorable $($BaselineItem.id)"
-                  $rebaseLine = $false
+                  if (($restorable -eq [Restorable]::HasParent) -and ($BaselineItem.Folder.ChildCount -eq 0) ) {
+                    Restore-Folder -FileName $BaselineItem.Name -SiteID $SiteId -DriveItemId $BaselineItem.parentReference.id
+                  }
                 }
-              }
+              
             }
           }
         }
       }
 
     } catch {
-      Write-Output "Something went wrong. Exiting"
+      Write-Output "An error occurred:"
+      Write-Output $_.Exception.Message
       $rebaseLine = $false
     } finally {
       Write-Output "Baseline needed $rebaseLine"
       if ($rebaseLine -eq $true) {
-        #New-BaselineForSite -SearchSite $SearchSite
+        New-BaselineForSite -SearchSite $SearchSite
       } else {
         Write-Output "No new baseline needed $rebaseLine"
       }

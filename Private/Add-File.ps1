@@ -1,7 +1,7 @@
 function Add-File {
   param(
     [Parameter(Mandatory = $true)]
-    $Filepath,
+    $InFilePath,
 
   [Parameter(Mandatory = $true)]
     $SiteId,
@@ -38,9 +38,9 @@ function Add-File {
       "Content-Type" = "application/json"
     }
 
-    $Content = Get-Content -Path $Filepath
+    $Content = Get-Content -Path $InFilePath
 
-    $puturl = "https://graph.microsoft.com/v1.0/sites/$($SiteId)/drive/items/root:/$($FolderId)/$($Filename):/content"
+    $puturl = "https://graph.microsoft.com/v1.0/sites/$($SiteId)$($FolderId)/$($Filename):/content"
 
     Write-Host "$($puturl)"
     $upload_headers = @{
@@ -49,7 +49,7 @@ function Add-File {
       "Content-Type" = "multipart/form-data"
     }
 
-    Invoke-RestMethod -Headers $upload_headers -Uri $puturl -InFile $Filepath -Method PUT -ContentType 'multipart/form-data' -Verbose
+    Invoke-RestMethod -Headers $upload_headers -Uri $puturl -InFile $InFilePath -Method PUT -ContentType 'multipart/form-data' -Verbose
 
   }
 }
