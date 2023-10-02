@@ -81,11 +81,10 @@ function Sync-DemoData {
           ([CrudState]::Amended) {
             #Write-Output "To amend: $($item.id)"
             if ($driveTypeValue -eq [DriveType]::Folder) {
-
-              if (-not ($item.Name -eq $BaselineItem.Name)) {
-                Amend-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteID -FileName $BaselineItem.Name
-                #Write-Output "$($item.name) vs $($BaselineItem.Name)"
-
+             
+              if($item.name -neq $BaselineItem.Name) {
+ #Amend-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteID -FileName $BaselineItem.Name
+              Write-Output "$($item.name) vs $($BaselineItem.Name)"
               }
             }
           }

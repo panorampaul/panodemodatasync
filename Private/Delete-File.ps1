@@ -12,7 +12,7 @@ function Delete-File {
 
     $result = Invoke-MgGraphRequest -Uri $url -Method Delete
 
-    Write-Output "Delete-File completed$($result)"
+    Write-Output "Delete-File completed $($result)"
   } catch {
     # Check if the error is a web exception
     if ($_.Exception.Response) {
