@@ -39,6 +39,7 @@ function Sync-DemoData {
 
     Write-Output "$($deltaValues.Count) changes since baseline"
     # Iterate through the value array
+    $rebaseLine = $true
     try {
       foreach ($item in $deltaValues) {
         #ignore root folder as it always changes on any update
@@ -79,7 +80,7 @@ function Sync-DemoData {
 
           }
 
-          #Write-Output "$($item.id) $driveTypeValue, $crudState, $restorable"
+          Write-Output "$($item.id) $driveTypeValue, $crudState, $restorable"
           switch ($crudState) {
             ([CrudState]::Added) {
               Delete-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteId
@@ -92,22 +93,26 @@ function Sync-DemoData {
                 if ($driveTypeValue -eq [DriveType]::Folder) {
                   Restore-Folder -FileName $BaselineItem.Name -SiteID $SiteId -DriveItemId $BaselineItem.parentReference.id
                 } else {
-                  Write-Output "$($item.id) $driveTypeValue, $crudState, $restorable $($BaselineItem.id)"
+                  Write-Output "x $($item.id) $driveTypeValue, $crudState, $restorable $($BaselineItem.id)"
+                  $rebaseLine = $false
                 }
               }
             }
           }
         }
       }
-      if ( -not ($deltaValues.Count -eq 0)) {
-         New-BaselineForSite -SearchSite $SearchSite
-      } else {
-        Write-Output "No new baseline needed"
-      }
-     
+
     } catch {
       Write-Output "Something went wrong. Exiting"
-      return
+      $rebaseLine = $false
+    } finally {
+      Write-Output "Baseline needed $rebaseLine"
+      if ($rebaseLine -eq $true) {
+        #New-BaselineForSite -SearchSite $SearchSite
+      } else {
+        Write-Output "No new baseline needed $rebaseLine"
+      }
+
     }
   } else {
     Write-Error "$($SearchSite) has not been baselined.  File $($CachedDeltaFile) not found. Creating a baseline now..."

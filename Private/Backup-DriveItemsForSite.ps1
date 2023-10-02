@@ -1,9 +1,16 @@
-function New-BaselineForSite {
-  param()
-  $defaultSiteName = "TestOfDriveRefresh"
-  $SearchSite = Read-Host -Prompt "Site Name. Press enter to accept [$($defaultSiteName)]"
-  $SearchSite = ($defaultSiteName,$SearchSite)[[bool]$SearchSite]
+function Backup-DriveItemsForSite {
+  param(
+    [Parameter(Mandatory = $false)]
+    [string]$SearchSite
+  )
 
+  $defaultSiteName = "TestOfDriveRefresh"
+
+  # Check if SearchSite parameter was not provided
+  if (-not $SearchSite) {
+    $SearchSite = Read-Host -Prompt "Site Name. Press enter to accept [$($defaultSiteName)]"
+    $SearchSite = ($defaultSiteName,$SearchSite)[[bool]$SearchSite]
+  }
 
   # Connect to the Microsoft Graph with the permission to read sites
   New-MgGraphConnection

@@ -1,5 +1,5 @@
 function New-BaselineForSite {
-  [CmdletBinding()]
+ 
   param(
     [Parameter(Mandatory = $false)]
     [string]$SearchSite
