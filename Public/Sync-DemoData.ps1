@@ -3,7 +3,9 @@ function Sync-DemoData {
     [Parameter(Mandatory = $true)]
     [string]$SearchSite,
     [Parameter(Mandatory = $true)]
-    [string]$DriveName
+    [string]$DriveName,
+    [Parameter(Mandatory = $true)]
+    [string]$SiteID
 
   )
 
@@ -19,31 +21,29 @@ function Sync-DemoData {
   $CachedDeltaFile = "delta/$($SearchSite)_baseline.json"
 
   $baselineFileExists = Test-Path -Path $CachedDeltaFile -PathType Leaf
-
   if ($baselineFileExists) {
-    $deltaLinkUrl = Read-DeltaLink -FilePath $CachedDeltaFile
-    Write-Output "delta $($deltaLinkUrl)"
-
-    #Get the delta of changes since the last time the baseline was built
-    $Delta = Invoke-MgGraphRequest -Uri $deltaLinkUrl -Method Get
-
-    Write-Output "Loading $($CachedDeltaFile)"
+    $deltaValues = @()
+    $url = Read-DeltaLink -FilePath $CachedDeltaFile
     $baseline = Get-Content -Path $CachedDeltaFile | ConvertFrom-Json
+    
+    Write-Output "delta $($url)"
+    do {
+      #Get the delta of changes since the last time the baseline was built
+      $Delta = Invoke-MgGraphRequest -Uri $url -Method Get
+      $deltaJsonData = $Delta | ConvertTo-Json -Depth 10
+      $deltaValues += $Delta.value
+      Write-Output "$($Delta.value.Count) items found"
+      $url = $Delta."@odata.nextLink"
+    } while ($null -ne $url)
 
-    $deltaJsonData = $Delta | ConvertTo-Json -Depth 10
-    $deltaJsonPath = "delta/$($SearchSite)_delta.json"
-    $deltaJsonData | Set-Content -Path $deltaJsonPath
 
-    Write-Output "Delta saved to $($deltaJsonPath)"
-    if (-not $Delta.value.Count) {
-      Write-Output "No changes detected"
-      return
-    }
-    Write-Output "$($Delta.value.Count) changes since baseline"
+    Write-Output "$($deltaValues.Count) changes since baseline"
     # Iterate through the value array
-    foreach ($item in $Delta.value) {
+    foreach ($item in $deltaValues) {
       #ignore root folder as it always changes on any update
-      if (-not ($item.Name -eq "root")) {
+      if (($item.Name -eq "root")) {
+        Write-Output "$($item.id) root folder updated at $($item.lastModifiedDateTime)"
+      } else {
         $driveTypeValue = [DriveType]::File
         if ($($item.Folder)) {
           $driveTypeValue = [DriveType]::Folder
@@ -52,16 +52,16 @@ function Sync-DemoData {
 
         $restorable = [Restorable]::NotRestorable
         $BaselineItem = $baseline.value | Where-Object { $_.id -eq $item.id }
-        
+
         if ($($BaselineItem)) {
           $crudState = [CrudState]::Amended
         }
 
         $baselineFileExists = Test-Path -Path "Downloads/$($item.id)" -PathType Leaf
-        $ParentItemFromDelta = $Delta.value | Where-Object { $_.id -eq $BaselineItem.parentReference.id }
+        $ParentItemFromDelta = $deltaValues | Where-Object { $_.id -eq $BaselineItem.parentReference.id }
         if ($($BaselineItem) -and ($item.Folder -or $baselineFileExists)) {
           $restorable = [Restorable]::HasParent
-          
+
           if ($ParentItemFromDelta.Deleted) {
             $restorable = [Restorable]::NoParent
           }
@@ -70,13 +70,13 @@ function Sync-DemoData {
 
         if ($($item.Deleted)) {
           $crudState = [CrudState]::Deleted
-          
+
         }
 
-        #Write-Output "$($item.id) $crudState, $restorable"
+        Write-Output "$($item.id) $driveTypeValue, $crudState, $restorable"
         switch ($crudState) {
           ([CrudState]::Added) {
-            Delete-File -DriveTypeValue $driveTypeValue -Id $item.id -DriveID $item.parentReference.driveId
+            Delete-File -DriveTypeValue $driveTypeValue -Id $item.id -SiteID $SiteID
 
           }
           ([CrudState]::Amended) {
@@ -86,9 +86,6 @@ function Sync-DemoData {
             #Write-Output "To restore: $($item.id)"
           }
         }
-
-
-
       }
     }
   } else {
