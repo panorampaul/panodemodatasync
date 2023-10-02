@@ -10,3 +10,4 @@ delta/*
 Downloads/*
 *.pspp
 .DS_Store
+.envrc

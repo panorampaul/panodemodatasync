@@ -120,7 +120,4 @@ function Sync-DemoData {
     Write-Error "$($SearchSite) has not been baselined.  File $($CachedDeltaFile) not found. Creating a baseline now..."
     New-BaselineForSite -SearchSite $SearchSite
   }
-
-
-
 }

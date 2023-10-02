@@ -9,7 +9,7 @@
 @{
 
 RootModule = 'PanoDemoDataSync.psm1'
-ModuleVersion = '1.0.01'
+ModuleVersion = '1.0.02'
 GUID = '18d2b202-5f19-4255-af9b-198b2f9ef163'
 Author = 'Paul Ryan'
 CompanyName = 'Panoram Digital'
