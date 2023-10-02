@@ -38,8 +38,8 @@ if (!($Sites)) {
 }
 elseif ($Sites.Count -eq 1) {
   $Site = $Sites
-  $SiteName = $Site.DisplayName
-  Write-Host "Found site to process:" $SiteName
+  $SearchSite = $Site.DisplayName
+  Write-Host "Found site to process:" $SearchSite
 
   $URL = "https://graph.microsoft.com/v1.0/sites/$($Site.ID)/drives"
 

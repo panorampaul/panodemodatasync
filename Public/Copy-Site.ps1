@@ -1,14 +1,14 @@
 function Copy-Site {
     param ()
     $defaultSiteName = "TestOfDriveRefresh"
-    $SiteName = Read-Host -Prompt "Site Name. Press enter to accept [$($defaultSiteName)]"
-    $SiteName = ($defaultSiteName, $SiteName)[[bool]$SiteName]
+    $SearchSite = Read-Host -Prompt "Site Name. Press enter to accept [$($defaultSiteName)]"
+    $SearchSite = ($defaultSiteName, $SearchSite)[[bool]$SearchSite]
     $defaultBackupSiteName = "TestOfDriveRefreshClone"
     $BackupSiteName = Read-Host -Prompt "Backup Site Name. Press enter to accept [$($defaultBackupSiteName)]"
     $BackupSiteName = ($defaultBackupSiteName, $BackupSiteName)[[bool]$BackupSiteName]
     
 
-    Write-Host "Clone-Site tenant id: $TenantId site: $SiteName" 
+    Write-Host "Clone-Site tenant id: $TenantId site: $SearchSite" 
 
     if ( -Not (Get-Module -ListAvailable -Name Microsoft.Graph)) {
         Write-Host "Microsoft.Graph is installing. Hang tight, this might take a while" -ForegroundColor Red
@@ -22,7 +22,7 @@ function Copy-Site {
 
     New-MgGraphConnection
     
-    $ID = Get-MgSite -Search $SiteName | Select-Object -ExpandProperty Id
+    $ID = Get-MgSite -Search $SearchSite | Select-Object -ExpandProperty Id
 
     #$BID = Get-MgSite -Search $BackupSiteName | Select-Object -ExpandProperty Id
 

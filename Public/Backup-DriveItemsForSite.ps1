@@ -18,8 +18,8 @@ function New-BaselineForSite {
     Write-Host "No matching sites found - exiting"; break }
   if ($Sites.Count -eq 1) { # Only one site found - go ahead
     $Site = $Sites
-    $SiteName = $Site.DisplayName
-    Write-Host "Found site to process:" $SiteName }
+    $SearchSite = $Site.DisplayName
+    Write-Host "Found site to process:" $SearchSite }
   elseif ($Sites.Count -gt 1) { # More than one site found. Ask which to use
     Clear-Host; Write-Host "More than one matching site was found. We need you to select a site to report."; [int]$i = 1
     Write-Host " "
@@ -29,7 +29,7 @@ function New-BaselineForSite {
     [int]$Answer = Read-Host "Enter the number of the site to use"
     if (($Answer -gt 0) -and ($Answer -le $i)) {
       [int]$Si = ($Answer - 1)
-      $SiteName = $Sites[$Si].DisplayName
+      $SearchSite = $Sites[$Si].DisplayName
       Write-Host "OK. Selected site is" $Sites[$Si].DisplayName
       $Site = $Sites[$Si] }
   }
